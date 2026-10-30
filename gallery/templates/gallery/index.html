@@ -1,0 +1,185 @@
+{% extends 'gallery/base.html' %}
+
+{% block title %}Django Model Image Gallery & Upload{% endblock %}
+
+{% block content %}
+<div class="container">
+
+  <!-- Hero Section -->
+  <header class="hero">
+    <div class="hero-pill">
+      <span>⚡</span> Model-Driven Image Storage & Display
+    </div>
+    <h1 class="hero-title">
+      Render Images from a <span>Django Model</span>
+    </h1>
+    <p class="hero-subtitle">
+      A simple, clean reference implementation demonstrating how to define an <code>ImageField</code> in a Django model, save uploaded files, and render them using <code>photo.image.url</code>.
+    </p>
+  </header>
+
+  <!-- Main Two-Column Layout -->
+  <div class="main-layout">
+
+    <!-- Left Column: Upload Form -->
+    <aside>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-header-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" x2="12" y1="3" y2="15"/>
+            </svg>
+          </div>
+          <h2 class="card-title">Add to Model</h2>
+        </div>
+
+        <form method="post" enctype="multipart/form-data" novalidate>
+          {% csrf_token %}
+
+          <!-- Title Field -->
+          <div class="form-group">
+            <label for="{{ form.title.id_for_label }}" class="form-label">Image Title *</label>
+            {{ form.title }}
+            {% if form.title.errors %}
+              <small style="color: var(--danger);">{{ form.title.errors.0 }}</small>
+            {% endif %}
+          </div>
+
+          <!-- Caption Field -->
+          <div class="form-group">
+            <label for="{{ form.caption.id_for_label }}" class="form-label">Caption / Description</label>
+            {{ form.caption }}
+            {% if form.caption.errors %}
+              <small style="color: var(--danger);">{{ form.caption.errors.0 }}</small>
+            {% endif %}
+          </div>
+
+          <!-- Image File Field with Instant Preview -->
+          <div class="form-group">
+            <label class="form-label">Select Image File *</label>
+            <div class="file-upload-box">
+              {{ form.image }}
+              <div class="file-upload-icon">📷</div>
+              <p class="file-upload-text" id="file-upload-label">
+                <strong>Click to browse</strong> or drag & drop<br>
+                PNG, JPG, WEBP or GIF
+              </p>
+            </div>
+            {% if form.image.errors %}
+              <small style="color: var(--danger);">{{ form.image.errors.0 }}</small>
+            {% endif %}
+
+            <!-- Instant client-side preview box -->
+            <div class="preview-container" id="image-preview-box">
+              <img id="image-preview-element" src="#" alt="Selected preview">
+              <span class="preview-badge">Live Preview</span>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 12h14"/>
+              <path d="m12 5 7 7-7 7"/>
+            </svg>
+            Save to Model
+          </button>
+        </form>
+      </div>
+
+      <!-- Quick Educational Architecture Guide -->
+      <div class="guide-box">
+        <h4>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M12 16v-4"/>
+            <path d="M12 8h.01"/>
+          </svg>
+          How It Works (4 Steps)
+        </h4>
+
+        <div class="code-step">
+          <div class="code-step-label">1. Define in <code>models.py</code></div>
+          <div class="code-snippet">image = models.ImageField(upload_to='uploads/')</div>
+        </div>
+
+        <div class="code-step">
+          <div class="code-step-label">2. Setup in <code>settings.py</code></div>
+          <div class="code-snippet">MEDIA_URL = '/media/'<br>MEDIA_ROOT = BASE_DIR / 'media'</div>
+        </div>
+
+        <div class="code-step">
+          <div class="code-step-label">3. Serve in <code>urls.py</code></div>
+          <div class="code-snippet">urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)</div>
+        </div>
+
+        <div class="code-step">
+          <div class="code-step-label">4. Render in Template</div>
+          <div class="code-snippet">&lt;img src="&#123;&#123; photo.image.url &#125;&#125;" alt="&#123;&#123; photo.title &#125;&#125;"&gt;</div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Right Column: Gallery of Stored Images -->
+    <section>
+      <div class="gallery-header">
+        <h2 style="font-size: 1.5rem; font-weight: 700;">Stored Model Instances</h2>
+        <span class="gallery-count">Total: <strong>{{ photos|length }}</strong> photo{{ photos|length|pluralize }}</span>
+      </div>
+
+      {% if photos %}
+        <div class="gallery-grid">
+          {% for photo in photos %}
+            <article class="photo-card">
+              <!-- Rendered image from Model's ImageField -->
+              <div class="photo-media">
+                {% if photo.image %}
+                  <img src="{{ photo.image.url }}" alt="{{ photo.title }}" class="photo-img" loading="lazy">
+                {% else %}
+                  <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: var(--text-subtle);">No image file</div>
+                {% endif %}
+                <span class="photo-badge">ID: #{{ photo.id }}</span>
+              </div>
+
+              <!-- Metadata from Model fields -->
+              <div class="photo-body">
+                <h3 class="photo-title">{{ photo.title }}</h3>
+                {% if photo.caption %}
+                  <p class="photo-caption">{{ photo.caption }}</p>
+                {% else %}
+                  <p class="photo-caption" style="font-style: italic; color: var(--text-subtle);">No caption provided</p>
+                {% endif %}
+
+                <div class="photo-meta">
+                  <span>📅 {{ photo.uploaded_at|date:"M d, Y" }}</span>
+                  <span>📁 {{ photo.image.name|truncatechars:20 }}</span>
+                </div>
+
+                <div class="photo-actions">
+                  <a href="{% url 'gallery:detail' photo.pk %}" class="btn btn-secondary" style="flex: 1;">
+                    Inspect
+                  </a>
+                  <a href="{% url 'gallery:delete' photo.pk %}" class="btn btn-danger" title="Delete from Model">
+                    Delete
+                  </a>
+                </div>
+              </div>
+            </article>
+          {% endfor %}
+        </div>
+      {% else %}
+        <!-- Empty State -->
+        <div class="empty-state">
+          <div class="empty-icon">🖼️</div>
+          <h3 class="empty-title">No images in model yet</h3>
+          <p class="empty-text">
+            Upload your first photo using the form on the left, or seed a sample photo to see it rendered instantly.
+          </p>
+        </div>
+      {% endif %}
+    </section>
+
+  </div>
+</div>
+{% endblock %}

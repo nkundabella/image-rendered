@@ -1,0 +1,25 @@
+{% extends 'gallery/base.html' %}
+
+{% block title %}Confirm Deletion &bull; {{ photo.title }}{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="card" style="max-width: 520px; margin: 3rem auto; text-align: center;">
+    <div style="font-size: 3rem; margin-bottom: 1rem;">⚠️</div>
+    <h1 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 0.75rem;">Delete this Photo?</h1>
+    <p style="color: var(--text-muted); margin-bottom: 1.5rem;">
+      Are you sure you want to remove <strong>"{{ photo.title }}"</strong> from the database and delete its stored image file? This action cannot be undone.
+    </p>
+
+    {% if photo.image %}
+      <img src="{{ photo.image.url }}" alt="{{ photo.title }}" style="width: 100%; max-height: 200px; object-fit: cover; border-radius: 8px; margin-bottom: 1.5rem; border: 1px solid var(--border-color);">
+    {% endif %}
+
+    <form method="post" style="display: flex; gap: 1rem; justify-content: center;">
+      {% csrf_token %}
+      <a href="{% url 'gallery:list' %}" class="btn btn-secondary" style="flex: 1;">Cancel</a>
+      <button type="submit" class="btn btn-danger" style="flex: 1;">Confirm Delete</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

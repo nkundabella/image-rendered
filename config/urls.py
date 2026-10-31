@@ -1,6 +1,3 @@
-"""
-URL configuration for image-rendered project.
-"""
 from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
@@ -11,7 +8,6 @@ urlpatterns = [
     path('', include('gallery.urls')),
 ]
 
-# Serve media files in development so images uploaded via models can be displayed
+# Needed in development so uploaded images can be opened in the browser
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
